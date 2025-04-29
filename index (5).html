@@ -1,0 +1,451 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Portfolio - Shonen Anime Style</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #e6e6fa;
+      color: #333;
+      font-family: 'Arial', sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      position: relative;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+      position: relative;
+      z-index: 2;
+    }
+    .header {
+      text-align: center;
+      padding: 120px 20px;
+      background: linear-gradient(to bottom, #1e1e4a, transparent);
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(255, 204, 0, 0.3), transparent);
+      animation: energyPulse 4s infinite ease-in-out;
+    }
+    .header h1 {
+      font-size: 4em;
+      color: #ffcc00;
+      text-shadow: 0 0 10px #ffcc00, 0 0 20px #ff4500;
+      animation: glowText 2s infinite alternate, slideIn 1s ease-out;
+      position: relative;
+      z-index: 1;
+      display: inline-block;
+      cursor: pointer;
+      transition: transform 0.3s ease, text-shadow 0.3s ease;
+    }
+    .header h1:hover {
+      transform: scale(1.1);
+      text-shadow: 0 0 15px #ff4500, 0 0 30px #ff4500;
+      animation: none;
+    }
+    .header h1:hover::before {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      right: -10px;
+      bottom: -10px;
+      background: radial-gradient(circle, rgba(255, 69, 0, 0.3), transparent);
+      animation: fireBlaze 1.2s ease-out infinite;
+      z-index: -1;
+    }
+    .header h1:hover::after {
+      content: '';
+      position: absolute;
+      top: -20px;
+      left: -20px;
+      right: -20px;
+      bottom: -20px;
+      background: radial-gradient(circle, rgba(255, 69, 0, 0.2), transparent);
+      animation: heatWave 1.5s ease-out infinite;
+      z-index: -2;
+    }
+    .header p {
+      font-size: 1.5em;
+      color: #fff;
+      margin-top: 15px;
+      opacity: 0.9;
+      animation: fadeIn 1.5s ease-out;
+    }
+    .section {
+      margin: 50px 0;
+      padding: 40px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+      position: relative;
+      transition: transform 0.5s ease, box-shadow 0.5s ease;
+    }
+    .section:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 10px 25px rgba(255, 69, 0, 0.3);
+    }
+    .section h2 {
+      font-size: 2.2em;
+      color: #1e1e4a;
+      margin-bottom: 20px;
+      border-bottom: 3px solid #ff4500;
+      display: inline-block;
+      padding-bottom: 5px;
+      position: relative;
+    }
+    .section h2::after {
+      content: '⚡';
+      position: absolute;
+      margin-left: 10px;
+      font-size: 1.2em;
+      animation: spark 1.5s infinite;
+    }
+    .bio p, .contact p {
+      font-size: 1.1em;
+      color: #444;
+    }
+    .skills-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+    }
+    .skill {
+      background: #1e1e4a;
+      color: #fff;
+      padding: 12px 25px;
+      border-radius: 25px;
+      font-size: 1em;
+      position: relative;
+      overflow: hidden;
+      transition: none;
+    }
+    .skill:hover {
+      transform: scale(1.1);
+      box-shadow: 0 5px 15px rgba(255, 69, 0, 0.4);
+    }
+    .skill:hover::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 69, 0, 0.6), transparent);
+      animation: fireSweep 0.5s ease-out forwards;
+    }
+    .projects-list {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+    .project {
+      background: #f9f9f9;
+      padding: 25px;
+      border-radius: 10px;
+      border-left: 6px solid #ff4500;
+      position: relative;
+      transition: transform 0.3s, box-shadow 0.3s;
+      animation: slideRight 1s ease-out;
+    }
+    .project:hover {
+      transform: translateX(15px);
+      box-shadow: 0 5px 20px rgba(255, 69, 0, 0.3);
+    }
+    .project h3 {
+      font-size: 1.5em;
+      color: #1e1e4a;
+      margin-bottom: 10px;
+    }
+    .project p {
+      font-size: 1em;
+      color: #666;
+      margin-bottom: 15px;
+    }
+    .project button {
+      background: #ffcc00;
+      color: #1e1e4a;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-size: 1em;
+      font-weight: bold;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.3s, transform 0.3s;
+    }
+    .project button:hover {
+      background: #ff4500;
+      color: #fff;
+      transform: scale(1.05);
+    }
+    .project button:focus {
+      outline: 3px solid #ffcc00;
+      outline-offset: 3px;
+    }
+    .tooltip {
+      position: absolute;
+      background: #1e1e4a;
+      color: #fff;
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: 2px solid #ff4500;
+      box-shadow: 0 3px 10px rgba(255, 69, 0, 0.4);
+      max-width: 250px;
+      z-index: 10;
+      animation: tooltipFadeIn 0.3s ease-out;
+      left: 0;
+      top: -100%;
+      transform: translateY(-10px);
+    }
+    .tooltip h4 {
+      font-size: 1.2em;
+      margin-bottom: 5px;
+      text-shadow: 0 0 5px #ffcc00;
+    }
+    .tooltip p {
+      font-size: 0.9em;
+      color: #ddd;
+    }
+    .contact a {
+      color: #ffcc00;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .contact a:hover {
+      color: #1e1e4a;
+    }
+    .anime-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('./anime-style-clouds.jpg') no-repeat center center fixed;
+  background-size: cover;
+  opacity: 0.15;
+  z-index: 0;
+  pointer-events: none;
+}
+
+    @keyframes slideIn {
+      0% { transform: translateY(-50px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideRight {
+      0% { transform: translateX(-50px); opacity: 0; }
+      100% { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes glowText {
+      0% { text-shadow: 0 0 10px #ffcc00, 0 0 20px #ff4500; }
+      100% { text-shadow: 0 0 20px #ffcc00, 0 0 30px #ff4500; }
+    }
+    @keyframes energyPulse {
+      0% { transform: scale(1); opacity: 0.3; }
+      50% { transform: scale(1.2); opacity: 0.5; }
+      100% { transform: scale(1); opacity: 0.3; }
+    }
+    @keyframes spark {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    @keyframes fireBlaze {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.05); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    @keyframes heatWave {
+      0% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.1); }
+      100% { opacity: 0.2; transform: scale(1); }
+    }
+    @keyframes fireSweep {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+    @keyframes tooltipFadeIn {
+      0% { opacity: 0; transform: translateY(0); }
+      100% { opacity: 1; transform: translateY(-10px); }
+    }
+    /* Accessibility */
+    a:focus, .skill:focus, .project:focus, .header h1:focus, .project button:focus {
+      outline: 3px solid #ffcc00;
+      outline-offset: 3px;
+    }
+    @media (max-width: 768px) {
+      .header h1 { font-size: 2.8em; }
+      .header p { font-size: 1.3em; }
+      .section { padding: 25px; }
+      .skills-list { flex-direction: column; align-items: center; }
+      .project { padding: 15px; }
+      .tooltip { max-width: 200px; font-size: 0.8em; }
+    }
+  </style>
+</head>
+<body>
+  <div className="anime-bg"></div>
+  <div id="root"></div>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.15/babel.min.js"></script>
+  <script type="text/babel">
+    const Header = () => (
+      <header className="header">
+        <h1 tabIndex="0">Nishant Pawar</h1>
+        <p>"Future Engineer: Innovating Through Code & Systems"</p>
+      </header>
+    );
+
+    const Bio = () => (
+      <div className="section bio fade-in" style={{ animationDelay: '0.2s' }}>
+        <h2>About Me</h2>
+        <p>
+          I'm a passionate and driven engineering student with a strong interest in technology, innovation, and problem-solving. Currently pursuing my degree in Instrumentation and Control Engineering, I enjoy applying theoretical knowledge to real-world projects—ranging from smart automation systems to full-stack web development.
+        </p>
+      </div>
+    );
+
+    const Skills = () => {
+      const skills = ['HTML', 'CSS', 'C++', 'SQL', 'Python', 'Ladder Logic' , 'Arduino IDE'];
+      return (
+        <div className="section skills fade-in" style={{ animationDelay: '0.4s' }}>
+          <h2>Skills</h2>
+          <div className="skills-list">
+            {skills.map((skill, index) => (
+              <div key={index} className="skill" tabIndex="0">{skill}</div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    const Projects = () => {
+      const projects = [
+        {
+          title: 'Smart Door Locking System',
+          description: 'Designed and developed an IoT-based smart door locking system using NodeMCU and Arduino IDE, enabling remote access and control.',
+          link: 'https://github.com/yourusername/project1',
+        },
+        {
+          title: 'Gas Leak Detection and Control System ',
+          description: '•	Designed and implemented an IoT-based gas leak detection system using NodeMCU, MQ5 gas sensor, and IR flame sensor to ensure home safety.',
+          link: 'https://github.com/yourusername/project2',
+        },
+        {
+          title: 'Hotel Management System',
+          description: '•	Developed a full-stack hotel management application featuring secure login and signup systems for users and admins.',
+          link: 'https://github.com/yourusername/project3',
+        },
+      ];
+
+      const [activeTooltip, setActiveTooltip] = React.useState(null);
+
+      const toggleTooltip = (index) => {
+        setActiveTooltip(activeTooltip === index ? null : index);
+      };
+
+      return (
+        <div className="section projects fade-in" style={{ animationDelay: '0.6s' }}>
+          <h2>Projects</h2>
+          <div className="projects-list">
+            {projects.map((project, index) => (
+              <div key={index} className="project" tabIndex="0">
+                <h3>{project.title}</h3>
+                <p>{project.description}</p>
+                <button onClick={() => toggleTooltip(index)}>About Project</button>
+                {activeTooltip === index && (
+                  <div className="tooltip">
+                    <h4>{project.title}</h4>
+                    <p>{project.description}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    const Contact = () => (
+      <div className="section contact fade-in" style={{ animationDelay: '0.8s' }}>
+        <h2>Contact</h2>
+        <p>Email: <a href="mailto:pawarnishant08@gmail.com">pawarnishant08@gmail.com</a></p>
+        <p>GitHub: <a href="https://github.com/Nishant0892" target="_blank">Nishant0892</a></p>
+        <p>LinkedIn: <a href="https://www.linkedin.com/in/nishant-pawar-880249288/" target="_blank">Nishant Pawar</a></p>
+      </div>
+    );
+
+    const App = () => (
+      <div className="container">
+        <Header />
+        <Bio />
+        <Skills />
+        <Projects />
+        <Contact />
+      </div>
+    );
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
