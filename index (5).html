@@ -1,48 +1,9 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Portfolio - Shonen Anime Style</title>
+  <title>Student Portfolio</title>
   <style>
     * {
       margin: 0;
@@ -155,7 +116,7 @@
       font-size: 1.2em;
       animation: spark 1.5s infinite;
     }
-    .bio p, .contact p {
+    .bio p, .contact p, .resume p {
       font-size: 1.1em;
       color: #444;
     }
@@ -217,7 +178,7 @@
       color: #666;
       margin-bottom: 15px;
     }
-    .project button {
+    .project button, .resume button {
       background: #ffcc00;
       color: #1e1e4a;
       border: none;
@@ -229,12 +190,12 @@
       position: relative;
       transition: background 0.3s, transform 0.3s;
     }
-    .project button:hover {
+    .project button:hover, .resume button:hover {
       background: #ff4500;
       color: #fff;
       transform: scale(1.05);
     }
-    .project button:focus {
+    .project button:focus, .resume button:focus {
       outline: 3px solid #ffcc00;
       outline-offset: 3px;
     }
@@ -262,27 +223,30 @@
       font-size: 0.9em;
       color: #ddd;
     }
-    .contact a {
+    .contact a, .resume a {
       color: #ffcc00;
       text-decoration: none;
       font-weight: bold;
     }
-    .contact a:hover {
+    .contact a:hover, .resume a:hover {
       color: #1e1e4a;
     }
     .anime-bg {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: url('./anime-style-clouds.jpg') no-repeat center center fixed;
-  background-size: cover;
-  opacity: 0.15;
-  z-index: 0;
-  pointer-events: none;
-}
-
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: url('anime-style-clouds.jpg');
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: cover;
+      background-attachment: fixed;
+      opacity: 0.80;
+      filter: brightness(0.5);
+      z-index: -1;
+      pointer-events: none;
+    }
     @keyframes slideIn {
       0% { transform: translateY(-50px); opacity: 0; }
       100% { transform: translateY(0); opacity: 1; }
@@ -326,8 +290,7 @@
       0% { opacity: 0; transform: translateY(0); }
       100% { opacity: 1; transform: translateY(-10px); }
     }
-    /* Accessibility */
-    a:focus, .skill:focus, .project:focus, .header h1:focus, .project button:focus {
+    a:focus, .skill:focus, .project:focus, .header h1:focus, .project button:focus, .resume button:focus {
       outline: 3px solid #ffcc00;
       outline-offset: 3px;
     }
@@ -342,16 +305,56 @@
   </style>
 </head>
 <body>
-  <div className="anime-bg"></div>
+  <div class="anime-bg"></div>
   <div id="root"></div>
   <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.15/babel.min.js"></script>
+  <script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+  </script>
   <script type="text/babel">
     const Header = () => (
       <header className="header">
         <h1 tabIndex="0">Nishant Pawar</h1>
-        <p>"Future Engineer: Innovating Through Code & Systems"</p>
+        <p>"Advancing Control Systems for a Smarter Future"</p>
       </header>
     );
 
@@ -365,7 +368,7 @@
     );
 
     const Skills = () => {
-      const skills = ['HTML', 'CSS', 'C++', 'SQL', 'Python', 'Ladder Logic' , 'Arduino IDE'];
+      const skills = ['HTML', 'CSS', 'C++', 'SQL', 'Python', 'Ladder Logic', 'Arduino IDE'];
       return (
         <div className="section skills fade-in" style={{ animationDelay: '0.4s' }}>
           <h2>Skills</h2>
@@ -387,12 +390,12 @@
         },
         {
           title: 'Gas Leak Detection and Control System ',
-          description: '•	Designed and implemented an IoT-based gas leak detection system using NodeMCU, MQ5 gas sensor, and IR flame sensor to ensure home safety.',
+          description: '• Designed and implemented an IoT-based gas leak detection system using NodeMCU, MQ5 gas sensor, and IR flame sensor to ensure home safety.',
           link: 'https://github.com/yourusername/project2',
         },
         {
           title: 'Hotel Management System',
-          description: '•	Developed a full-stack hotel management application featuring secure login and signup systems for users and admins.',
+          description: '• Developed a full-stack hotel management application featuring secure login and signup systems for users and admins.',
           link: 'https://github.com/yourusername/project3',
         },
       ];
@@ -425,6 +428,18 @@
       );
     };
 
+    const Resume = () => (
+      <div className="section resume fade-in" style={{ animationDelay: '0.7s' }}>
+        <h2>Resume</h2>
+        <p>
+          Explore my professional journey, skills, and accomplishments in detail. Download my resume to learn more about my qualifications and experience.
+        </p>
+        <a href="https://docs.google.com/document/d/1qh4OWCCZomH1jgQC7qO9MCfTSYq4hJqb/export?format=docx" download>
+          <button>Download Resume</button>
+        </a>
+      </div>
+    );
+
     const Contact = () => (
       <div className="section contact fade-in" style={{ animationDelay: '0.8s' }}>
         <h2>Contact</h2>
@@ -440,6 +455,7 @@
         <Bio />
         <Skills />
         <Projects />
+        <Resume />
         <Contact />
       </div>
     );
@@ -447,5 +463,6 @@
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
   </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'937fbb9b3d25bcc5',t:'MTc0NTkzOTQ5Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
